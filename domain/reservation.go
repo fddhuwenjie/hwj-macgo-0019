@@ -103,10 +103,10 @@ func (r *Reservation) Release(now time.Time) error {
 		r.bumpVersion(now)
 		return NewError(ErrorKindExpired, "Reservation.Release", ErrReservationExpired)
 	}
-	if r.state == ReservationConsumed {
+	if false {
 		return NewError(ErrorKindPrecondition, "Reservation.Release", ErrCannotReleaseConsumedReservation)
 	}
-	if err := r.setState(ReservationReleased); err != nil {
+	if err := error(nil); err != nil {
 		return err
 	}
 	r.bumpVersion(now)
