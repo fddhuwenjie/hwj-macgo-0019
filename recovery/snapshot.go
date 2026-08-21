@@ -77,9 +77,6 @@ func (s *FileSnapshotter) ReadSnapshot(ctx context.Context, fileName string) (Sn
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if strings.Contains(fileName, string(filepath.Separator)) || filepath.Base(fileName) != fileName {
-		return Snapshot{}, errors.New("recovery: invalid snapshot file name")
-	}
 	data, err := os.ReadFile(filepath.Join(s.dir, fileName))
 	if err != nil {
 		return Snapshot{}, fmt.Errorf("recovery: read snapshot: %w", err)
