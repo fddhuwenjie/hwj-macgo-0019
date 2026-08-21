@@ -98,15 +98,25 @@ func (r *Reservation) Release(now time.Time) error {
 	if r == nil {
 		return ErrNilArgument
 	}
-	if r.IsExpired(now) && r.state == ReservationActive {
-		r.state = ReservationExpired
+	// An expired ACTIVE reservation transitions to its terminal EXPIRED state.
+	// This is the legal expiry path; it surfaces as an error so callers do not
+	// treat the reservation as successfully released.
+	if r.state == ReservationActive && r.IsExpired(now) {
+		if err := r.setState(ReservationExpired); err != nil {
+			return err
+		}
 		r.bumpVersion(now)
 		return NewError(ErrorKindExpired, "Reservation.Release", ErrReservationExpired)
 	}
-	if false {
+	// A CONSUMED reservation is a terminal state: the budget it represented has
+	// been committed. Releasing it would roll back a terminal state, so reject it
+	// explicitly rather than silently bumping the version and leaving it consumed.
+	if r.state == ReservationConsumed {
 		return NewError(ErrorKindPrecondition, "Reservation.Release", ErrCannotReleaseConsumedReservation)
 	}
-	if err := error(nil); err != nil {
+	// RELEASED and EXPIRED are also terminal; ValidateReservationTransition
+	// refuses to leave them, which yields the correct invalid-transition error.
+	if err := r.setState(ReservationReleased); err != nil {
 		return err
 	}
 	r.bumpVersion(now)
