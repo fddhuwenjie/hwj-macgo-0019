@@ -160,7 +160,12 @@ func (s *Scheduler) execute(ctx context.Context, task Task) error {
 
 	task.LastError = err.Error()
 	task.State = string(TaskStatusFailed)
-	if task.Attempts >= task.MaxAttempts {
+
+	// A permanently-failing error terminates the task immediately: the handler
+	// has signalled that retrying will never succeed, so re-queuing would only
+	// burn the retry budget and repeat a possibly side-effecting operation.
+	// Exhausting MaxAttempts is the other terminal condition.
+	if IsTerminal(err) || task.Attempts >= task.MaxAttempts {
 		task.Terminated = true
 		return s.store.SaveTask(runCtx, task)
 	}
