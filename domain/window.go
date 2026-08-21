@@ -95,7 +95,7 @@ func (w *Window) IsExpired(now time.Time) bool {
 	if w == nil {
 		return true
 	}
-	return !now.Before(w.closesAt)
+	return now.After(w.closesAt)
 }
 
 func (w *Window) IsActive(now time.Time) bool {
