@@ -160,7 +160,7 @@ func (s *Scheduler) execute(ctx context.Context, task Task) error {
 
 	task.LastError = err.Error()
 	task.State = string(TaskStatusFailed)
-	if IsTerminal(err) || task.Attempts >= task.MaxAttempts {
+	if task.Attempts >= task.MaxAttempts {
 		task.Terminated = true
 		return s.store.SaveTask(runCtx, task)
 	}
