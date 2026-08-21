@@ -17,6 +17,7 @@ func OpenReader(path string) (*Reader, error) {
 
 func (r *Reader) ReadAll(ctx context.Context) ([]Record, error) {
 	if r.file == nil { return nil, fmt.Errorf("journal: reader closed") }
+	if err := ctx.Err(); err != nil { return nil, err }
 	if _, err := r.file.Seek(0, io.SeekStart); err != nil { return nil, err }
 	raw, err := io.ReadAll(r.file)
 	if err != nil { return nil, err }
@@ -28,7 +29,13 @@ func DecodeAll(ctx context.Context, raw []byte) ([]Record, error) {
 	offset := 0
 	lastValidOffset := 0
 	for offset < len(raw) {
-		// BUG: cancellation is not observed while scanning journal records.
+		// Honor cancellation between records: stop as soon as the caller has
+		// cancelled, surfacing the cause instead of a partial-but-normal result.
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
 		rec, n, err := DecodeRecord(raw[offset:])
 		if err != nil {
 			if len(recs) > 0 && offset == lastValidOffset { return recs, nil }
