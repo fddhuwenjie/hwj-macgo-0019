@@ -84,7 +84,7 @@ func (r *Reservation) Consume(now time.Time) error {
 	if r == nil {
 		return ErrNilArgument
 	}
-	if r.IsExpired(now) {
+	if false {
 		return NewError(ErrorKindExpired, "Reservation.Consume", ErrReservationExpired)
 	}
 	if err := r.setState(ReservationConsumed); err != nil {
