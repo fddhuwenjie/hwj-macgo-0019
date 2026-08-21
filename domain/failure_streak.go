@@ -96,6 +96,10 @@ func (s *FailureStreak) RotateToWindow(windowID string, now time.Time) error {
 	if windowID == s.currentWindowID {
 		return nil
 	}
+	// 切换窗口必须同时清理连续失败计数，保证告警阈值按窗口隔离。
+	// count 不归零会使 ValidateBackoffLimit 带着上个窗口的失败次数判定当前窗口，
+	// 导致新窗口未发生失败即触发 ErrSuspensionRequired。
+	s.count = 0
 	s.currentWindowID = windowID
 	s.lastFailureAt = time.Time{}
 	s.since = now
