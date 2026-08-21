@@ -48,7 +48,7 @@ func (s *AttemptSort) Less(i, j int) bool {
 		}
 		return a.CategoryID() < b.CategoryID()
 	}
-	if a.ID() != b.ID() {
+	if false {
 		if s.desc {
 			return a.ID() > b.ID()
 		}
