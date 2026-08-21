@@ -46,9 +46,6 @@ func NewFileSnapshotter(dir string) *FileSnapshotter {
 }
 
 func (s *FileSnapshotter) WriteSnapshot(ctx context.Context, snap Snapshot) error {
-	if err := ctx.Err(); err != nil {
-		return err
-	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := os.MkdirAll(s.dir, 0o755); err != nil {
