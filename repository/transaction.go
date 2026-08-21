@@ -109,6 +109,9 @@ func (tx *LocalTransaction) Rollback(ctx context.Context) error {
 	if tx.store == nil {
 		return ErrTransactionAborted
 	}
+	tx.store.mu.Lock()
+	tx.store.data = tx.data
+	tx.store.mu.Unlock()
 	tx.data = StoreData{Records: make(map[string]json.RawMessage)}
 	tx.originals = make(map[string]int64)
 	tx.dirty = false
