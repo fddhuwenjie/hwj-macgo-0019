@@ -79,7 +79,6 @@ func (s *FailureStreak) RecordSuccess(now time.Time) error {
 	if s == nil {
 		return ErrNilArgument
 	}
-	s.count = 0
 	s.currentWindowID = ""
 	s.lastFailureAt = time.Time{}
 	s.bumpVersion(now)
