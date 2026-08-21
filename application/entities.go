@@ -62,6 +62,18 @@ type CandidateView struct {
 	Reason        string
 }
 
+// CandidatePage is the pagination envelope for candidate views. Total is the
+// number of candidates after filtering and sorting (independent of the page),
+// so the caller can keep the full size even when the page is empty.
+type CandidatePage struct {
+	Items      []CandidateView
+	Total      int
+	Offset     int
+	Limit      int
+	NextOffset int
+	HasMore    bool
+}
+
 type Page struct {
 	Offset     int
 	Limit      int

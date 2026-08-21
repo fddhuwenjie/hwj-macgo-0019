@@ -56,11 +56,12 @@ func NewQueryService(attempts AttemptReader, windows WindowReader, reservations 
 	return NewService(attempts, windows, reservations, results, backoffPlans)
 }
 
-// ListAttempts filters, sorts and paginates attempts.
-func (s *Service) ListAttempts(ctx context.Context, filter Filter, page Page) ([]domain.Attempt, error) {
+// ListAttempts filters, sorts and paginates attempts, returning the page
+// together with consistent pagination metadata (Total, NextOffset, HasMore).
+func (s *Service) ListAttempts(ctx context.Context, filter Filter, page Page) (PageResult, error) {
 	attempts, err := s.attempts.ListAttempts(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("query: list attempts: %w", err)
+		return PageResult{}, fmt.Errorf("query: list attempts: %w", err)
 	}
 	filtered := make([]domain.Attempt, 0, len(attempts))
 	for _, a := range attempts {
@@ -69,27 +70,27 @@ func (s *Service) ListAttempts(ctx context.Context, filter Filter, page Page) ([
 		}
 	}
 	filtered = SortAttempts(filtered, SortAsc)
-	result := PaginateAttempts(filtered, page)
-	return result.Items, nil
+	return PaginateAttempts(filtered, page), nil
 }
 
-// RetryableCandidates returns stable retryable attempts with next run, failure count and remaining budget.
-func (s *Service) RetryableCandidates(ctx context.Context, filter Filter, page Page) ([]RetryableCandidate, error) {
+// RetryableCandidates returns stable retryable attempts with next run, failure
+// count and remaining budget, together with consistent pagination metadata.
+func (s *Service) RetryableCandidates(ctx context.Context, filter Filter, page Page) (Paged[RetryableCandidate], error) {
 	attempts, err := s.attempts.ListAttempts(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("query: list attempts: %w", err)
+		return Paged[RetryableCandidate]{}, fmt.Errorf("query: list attempts: %w", err)
 	}
 	windows, err := s.windows.ListWindows(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("query: list windows: %w", err)
+		return Paged[RetryableCandidate]{}, fmt.Errorf("query: list windows: %w", err)
 	}
 	plans, err := s.backoffPlans.ListBackoffPlans(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("query: list backoff plans: %w", err)
+		return Paged[RetryableCandidate]{}, fmt.Errorf("query: list backoff plans: %w", err)
 	}
 	results, err := s.results.ListResults(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("query: list results: %w", err)
+		return Paged[RetryableCandidate]{}, fmt.Errorf("query: list results: %w", err)
 	}
 
 	budgetByCategory := make(map[string]int)

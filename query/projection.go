@@ -64,16 +64,9 @@ func BuildFailureTrend(attempts []domain.Attempt, results []domain.Result, categ
 	return points
 }
 
-func PaginateCandidates(candidates []RetryableCandidate, page Page) []RetryableCandidate {
-	if err := ValidatePage(page); err != nil {
-		return nil
-	}
-	if page.Offset > len(candidates) {
-		page.Offset = len(candidates)
-	}
-	end := page.Offset + page.Limit
-	if end > len(candidates) {
-		end = len(candidates)
-	}
-	return append([]RetryableCandidate(nil), candidates[page.Offset:end]...)
+func PaginateCandidates(candidates []RetryableCandidate, page Page) Paged[RetryableCandidate] {
+	// Paginate clamps offset/end into range and preserves Total even when the
+	// page is empty, so a stale client offset never panics and metadata stays
+	// consistent with the attempt pagination path.
+	return Paginate(candidates, page)
 }
