@@ -97,7 +97,6 @@ func (s *FailureStreak) RotateToWindow(windowID string, now time.Time) error {
 		return nil
 	}
 	s.currentWindowID = windowID
-	s.count = 0
 	s.lastFailureAt = time.Time{}
 	s.since = now
 	s.bumpVersion(now)
