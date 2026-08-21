@@ -49,9 +49,6 @@ func (w *Writer) Append(ctx context.Context, version int64, payload []byte) (Rec
 		return Record{}, ctx.Err()
 	default:
 	}
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	rec := Record{
 		Sequence:  w.seq,
 		Version:   version,
