@@ -37,17 +37,8 @@ func ValidatePage(page Page) error {
 }
 
 func PaginateAttempts(items []domain.Attempt, page Page) PageResult {
-	if err := ValidatePage(page); err != nil {
-		return PageResult{Items: nil, Total: len(items), Offset: page.Offset, Limit: page.Limit}
-	}
 	total := len(items)
-	if page.Offset > total {
-		page.Offset = total
-	}
 	end := page.Offset + page.Limit
-	if end > total {
-		end = total
-	}
 	pageItems := append([]domain.Attempt(nil), items[page.Offset:end]...)
 	next := end
 	hasMore := end < total
