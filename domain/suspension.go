@@ -76,9 +76,6 @@ func (s *Suspension) Lift(now time.Time) error {
 	if s == nil {
 		return ErrNilArgument
 	}
-	if s.liftedAt != nil {
-		return NewError(ErrorKindPrecondition, "Suspension.Lift", ErrInvalidTransition)
-	}
 	t := now
 	s.liftedAt = &t
 	s.bumpVersion(now)
