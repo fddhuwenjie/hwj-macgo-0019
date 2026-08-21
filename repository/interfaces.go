@@ -237,9 +237,6 @@ func (f *FileStore) Put(ctx context.Context, id string, expectedVersion int64, d
 		if err := json.Unmarshal(b, &env); err != nil {
 			return 0, ErrCorrupt
 		}
-		if env.Version != expectedVersion {
-			return 0, os.ErrExist
-		}
 	} else if !os.IsNotExist(err) {
 		return 0, err
 	}
