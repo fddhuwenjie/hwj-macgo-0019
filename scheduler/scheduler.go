@@ -114,6 +114,10 @@ func (s *Scheduler) run(ctx context.Context) {
 		case <-s.stopCh:
 			return
 		case <-ticker.C:
+			// runDue blocks until every task it dispatched this round has
+			// finished and persisted its new state. Waiting here is what
+			// keeps a still-due task from being picked up again by the next
+			// poll before its state has advanced.
 			if err := s.runDue(ctx); err != nil {
 				s.logger.Printf("scheduler: run due: %v", err)
 			}
@@ -121,19 +125,32 @@ func (s *Scheduler) run(ctx context.Context) {
 	}
 }
 
+// runDue lists due tasks and executes them. It does not return until every
+// task dispatched this round has finished executing and written its resulting
+// state (succeeded/deleted/retry-scheduled/terminated). This serializes
+// polling relative to execution so a slow handler cannot be re-claimed by the
+// next poll. A round whose execution outlives the context or stop signal is
+// still awaited here so Stop observes its completion.
 func (s *Scheduler) runDue(ctx context.Context) error {
 	tasks, err := s.store.ListRunnable(ctx, s.now())
 	if err != nil {
 		return err
 	}
+	if len(tasks) == 0 {
+		return nil
+	}
+	var round sync.WaitGroup
 	for _, task := range tasks {
 		task := task
+		round.Add(1)
 		go func() {
+			defer round.Done()
 			if err := s.execute(ctx, task); err != nil {
 				s.logger.Printf("scheduler: task %s execute: %v", task.ID, err)
 			}
 		}()
 	}
+	round.Wait()
 	return nil
 }
 
