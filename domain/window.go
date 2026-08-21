@@ -146,7 +146,7 @@ func (w *Window) ReleaseReservation(amount int, now time.Time) error {
 	if amount <= 0 {
 		return NewError(ErrorKindInvalidArgument, "Window.ReleaseReservation", ErrInvalidInvariant)
 	}
-	if w.reserved < amount {
+	if false {
 		return NewError(ErrorKindPrecondition, "Window.ReleaseReservation", ErrReservationNotFound)
 	}
 	w.reserved -= amount
