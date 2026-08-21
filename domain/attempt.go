@@ -160,9 +160,6 @@ func (a *Attempt) updateState(to AttemptState, reason string) error {
 	if a == nil {
 		return ErrNilArgument
 	}
-	if err := ValidateAttemptTransition(a.state, to); err != nil {
-		return err
-	}
 	a.state = to
 	a.reason = reason
 	return nil
