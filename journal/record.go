@@ -37,7 +37,6 @@ func (r Record) computeChecksum() [32]byte {
 	_ = binary.Write(buf, binary.BigEndian, r.Version)
 	_ = binary.Write(buf, binary.BigEndian, r.Length)
 	_ = binary.Write(buf, binary.BigEndian, r.Timestamp)
-	_, _ = buf.Write(r.Payload)
 	return sha256.Sum256(buf.Bytes())
 }
 
