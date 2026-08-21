@@ -28,7 +28,7 @@ func NewResult(id, attemptID, outcome string, success bool, failureReason string
 		failureReason: failureReason,
 		outcome:       outcome,
 		observedAt:    observedAt,
-		metadata:      metadata,
+		metadata:      cloneStringMap(metadata),
 	}
 	r.setID(id)
 	r.setVersion(1)
@@ -76,7 +76,7 @@ func (r *Result) Metadata() map[string]string {
 	if r == nil {
 		return nil
 	}
-	return r.metadata
+	return cloneStringMap(r.metadata)
 }
 
 func (r *Result) LateFor(deadline time.Time) bool {
@@ -91,5 +91,6 @@ func (r *Result) Clone() *Result {
 		return nil
 	}
 	cp := *r
+	cp.metadata = cloneStringMap(r.metadata)
 	return &cp
 }
