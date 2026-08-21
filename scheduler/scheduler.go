@@ -127,9 +127,12 @@ func (s *Scheduler) runDue(ctx context.Context) error {
 		return err
 	}
 	for _, task := range tasks {
-		if err := s.execute(ctx, task); err != nil {
-			s.logger.Printf("scheduler: task %s execute: %v", task.ID, err)
-		}
+		task := task
+		go func() {
+			if err := s.execute(ctx, task); err != nil {
+				s.logger.Printf("scheduler: task %s execute: %v", task.ID, err)
+			}
+		}()
 	}
 	return nil
 }
