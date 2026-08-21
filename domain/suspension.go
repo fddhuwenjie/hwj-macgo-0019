@@ -72,9 +72,35 @@ func (s *Suspension) IsActive(now time.Time) bool {
 	return s.liftedAt == nil && now.Before(s.suspendedUntil)
 }
 
+// IsLifted reports whether the suspension has been manually lifted and is
+// therefore in its terminal state. A lifted suspension can never become active
+// again, regardless of suspendedUntil.
+func (s *Suspension) IsLifted() bool {
+	if s == nil {
+		return false
+	}
+	return s.liftedAt != nil
+}
+
+// LiftedAt reports the time the suspension was lifted and whether it has been
+// lifted at all. Once lifted, the record is terminal: Lift must be rejected and
+// the lift time must not be overwritten.
+func (s *Suspension) LiftedAt() (time.Time, bool) {
+	if s == nil || s.liftedAt == nil {
+		return time.Time{}, false
+	}
+	return *s.liftedAt, true
+}
+
 func (s *Suspension) Lift(now time.Time) error {
 	if s == nil {
 		return ErrNilArgument
+	}
+	// A lifted suspension is in its terminal state. Re-lifting would silently
+	// succeed, overwrite the original lift time and advance the version, so it
+	// must be rejected instead. This mirrors RecoveryCredential.Redeem.
+	if s.liftedAt != nil {
+		return NewError(ErrorKindPrecondition, "Suspension.Lift", ErrInvalidTransition)
 	}
 	t := now
 	s.liftedAt = &t
