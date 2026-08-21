@@ -31,12 +31,20 @@ func (r Record) ChecksumBytes() []byte {
 	return r.Checksum[:]
 }
 
+// computeChecksum authenticates every byte that survives to disk: the full
+// header (Sequence, Version, Length, Timestamp) AND the Payload body. The
+// Length field alone does not protect the body — if Payload bytes are swapped
+// while Length stays identical, a header-only checksum would still match and
+// the tampered state would be replayed as if genuine. Including Payload closes
+// that gap; the header fields remain covered, so any header tamper is still
+// rejected with a checksum mismatch.
 func (r Record) computeChecksum() [32]byte {
 	buf := bytes.NewBuffer(nil)
 	_ = binary.Write(buf, binary.BigEndian, r.Sequence)
 	_ = binary.Write(buf, binary.BigEndian, r.Version)
 	_ = binary.Write(buf, binary.BigEndian, r.Length)
 	_ = binary.Write(buf, binary.BigEndian, r.Timestamp)
+	_, _ = buf.Write(r.Payload)
 	return sha256.Sum256(buf.Bytes())
 }
 
