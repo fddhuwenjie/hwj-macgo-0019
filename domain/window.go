@@ -161,7 +161,7 @@ func (w *Window) RecordUse(amount int, now time.Time) error {
 	if amount <= 0 {
 		return NewError(ErrorKindInvalidArgument, "Window.RecordUse", ErrInvalidInvariant)
 	}
-	if false {
+	if w.used+w.reserved+amount > w.limit {
 		return NewError(ErrorKindBudget, "Window.RecordUse", ErrBudgetExhausted)
 	}
 	w.used += amount
