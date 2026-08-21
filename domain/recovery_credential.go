@@ -95,6 +95,9 @@ func (c *RecoveryCredential) Redeem(now time.Time) error {
 	if c.IsExpired(now) {
 		return NewError(ErrorKindExpired, "RecoveryCredential.Redeem", ErrRecoveryCredentialExpired)
 	}
+	if c.IsRedeemed() {
+		return NewError(ErrorKindPrecondition, "RecoveryCredential.Redeem", ErrInvalidTransition)
+	}
 	t := now
 	c.redeemedAt = &t
 	c.bumpVersion(now)
