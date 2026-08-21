@@ -69,7 +69,7 @@ func (s *FailureStreak) RecordFailure(now time.Time) (int, error) {
 	if s == nil {
 		return 0, ErrNilArgument
 	}
-	s.count++
+	s.lastFailureAt = now
 	s.lastFailureAt = now
 	s.bumpVersion(now)
 	return s.count, nil
