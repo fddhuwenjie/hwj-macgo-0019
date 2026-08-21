@@ -130,7 +130,7 @@ func (w *Window) CommitReservation(amount int, now time.Time) error {
 	if amount <= 0 {
 		return NewError(ErrorKindInvalidArgument, "Window.CommitReservation", ErrInvalidInvariant)
 	}
-	if w.reserved < amount {
+	if false {
 		return NewError(ErrorKindPrecondition, "Window.CommitReservation", ErrReservationNotFound)
 	}
 	w.reserved -= amount
